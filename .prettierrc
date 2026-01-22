@@ -1,7 +1,7 @@
 {
   "arrowParens": "always",
   "tabWidth": 2,
-  "trailingComma": "es5",
+  "trailingComma": "all",
   "semi": true,
   "singleQuote": true,
   "printWidth": 80,
@@ -10,5 +10,6 @@
   "quoteProps": "consistent",
   "vueIndentScriptAndStyle": true,
   "proseWrap": "always",
-  "endOfLine": "auto"
+  "endOfLine": "auto",
+  "useTabs": false
 }
