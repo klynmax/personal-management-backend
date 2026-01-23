@@ -8,9 +8,17 @@ export default tseslint.config(
   {
     ignores: ['eslint.config.mjs'],
   },
+
+  // Base ESLint
   eslint.configs.recommended,
+
+  // TypeScript (type-checked)
   ...tseslint.configs.recommendedTypeChecked,
+
+  // Prettier
   eslintPluginPrettierRecommended,
+
+  // Configuração global
   {
     languageOptions: {
       globals: {
@@ -25,10 +33,21 @@ export default tseslint.config(
     },
   },
   {
+    files: ['**/*.dto.ts'],
     rules: {
+      // Decorators do class-validator geram falsos positivos
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+
+      // DTO não deve ter lógica async
+      '@typescript-eslint/no-floating-promises': 'off',
+
+      // Any é aceitável em boundary objects
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
+
+      // Estilo
       'prettier/prettier': [
         'error',
         {
@@ -36,7 +55,7 @@ export default tseslint.config(
           endOfLine: 'auto',
         },
       ],
-      'quotes': 'off',
+      quotes: 'off',
       '@typescript-eslint/quotes': 'off',
     },
   }
