@@ -10,17 +10,17 @@ import {
 import { LevelUsersType, StatusUsersType } from 'src/enum/users.enum';
 
 export class CreateUsersDTO {
-  @MinLength(2)
-  @MaxLength(100)
+  @MinLength(2, { message: 'O nome deve ter no mínimo 2 caracteres' })
+  @MaxLength(100, { message: 'O nome pode ter no máximo 100 caracteres' })
   @IsNotEmpty()
   name: string;
 
   @IsNotEmpty()
-  @IsEmail()
+  @IsEmail({}, { message: 'Informe um e-mail válido' })
   email: string;
 
   @IsNotEmpty()
-  @MinLength(8)
+  @MinLength(8, { message: 'A senha deve ter no mínimo 8 caracteres' })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
     message: 'Senha deve conter letra maiúscula, minúscula e número',
   })
@@ -33,10 +33,14 @@ export class CreateUsersDTO {
   phone: string;
 
   @IsNotEmpty()
-  @IsEnum(LevelUsersType)
+  @IsEnum(LevelUsersType, {
+    message: 'O nível do usuário informado é inválido',
+  })
   level: LevelUsersType;
 
-  @IsEnum(StatusUsersType)
+  @IsEnum(StatusUsersType, {
+    message: 'O status informado é inválido',
+  })
   @IsOptional()
   status?: StatusUsersType;
 }
