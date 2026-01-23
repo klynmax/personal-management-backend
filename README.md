@@ -22,41 +22,55 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## Descrição do framework
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+[Nest](https://github.com/nestjs/nest) framework TypeScript para aplicação com banco de dados.
 
-## Project setup
+## Setup do projeto
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+## Compilar e executar o projeto
 
 ```bash
 # development
-$ npm run start
+npm run start
 
 # watch mode
-$ npm run start:dev
+npm run start:dev
 
 # production mode
-$ npm run start:prod
+npm run start:prod
 ```
 
-## Run tests
+## Executar testes
 
 ```bash
 # unit tests
-$ npm run test
+npm run test
 
 # e2e tests
-$ npm run test:e2e
+npm run test:e2e
 
 # test coverage
-$ npm run test:cov
+npm run test:cov
 ```
+
+## Corrigir erros de lint no código
+
+```bash
+npx eslint src --fix
+```
+
+## Executar o swagger
+
+```bash
+npm run start:dev
+```
+
+Acessar no navegador http://localhost:3000/api
 
 ## Deployment
 
