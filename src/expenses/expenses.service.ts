@@ -4,6 +4,7 @@ import { Expenses } from 'src/schemas/expenses.schema';
 import { CreateExpensesDTO } from './dtos/create-expense.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateExpensesDTO } from './dtos/update-expenses.dto';
+import { StatusExpense } from 'src/enum/expenses.enum';
 
 @Injectable()
 export class ExpensesServices {
@@ -69,5 +70,34 @@ export class ExpensesServices {
     }
 
     return expense;
+  }
+
+  async remove(id: string) {
+    const expense = await this.expenses
+      .findOneAndUpdate(
+        { _id: id, deleted: false },
+        {
+          $set: {
+            deleted: true,
+            deletedAt: new Date(),
+            status: StatusExpense.CANCELED,
+          },
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!expense) {
+      throw new NotFoundException('Despesa não encontrada ou já removida');
+    }
+
+    return {
+      message: 'Despesa cancelada com sucesso',
+      data: {
+        id: expense._id,
+        status: expense.status,
+        deletedAt: expense.deletedAt,
+      },
+    };
   }
 }

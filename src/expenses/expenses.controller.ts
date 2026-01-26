@@ -16,6 +16,7 @@ import {
   Patch,
   Query,
   Controller,
+  Delete,
 } from '@nestjs/common';
 
 import { ExpensesServices } from './expenses.service';
@@ -91,5 +92,20 @@ export class ExpensesController {
   })
   async findById(@Param('id') id: string): Promise<Expenses> {
     return this.expensesService.findById(id);
+  }
+
+  @Delete(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID da despesa',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  @ApiOperation({ summary: 'Remove a despesa a partir do seu id' })
+  @ApiCreatedResponse({ description: 'Despesa removida com sucesso.' })
+  @ApiBadRequestResponse({
+    description: 'Despesa não removida. Verifique o id e tente novamente.',
+  })
+  remove(@Param('id') id: string) {
+    return this.expensesService.remove(id);
   }
 }
