@@ -2,6 +2,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Users } from 'src/schemas/users/users.schema';
 import { CreateUsersDTO } from './dtos/create-users.dto';
+import { UpdateUsersDTO } from './dtos/update-users.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
@@ -14,6 +15,24 @@ export class UsersServices {
   create(body: CreateUsersDTO): Promise<Users> {
     const newUser = new this.users(body);
     return newUser.save();
+  }
+
+  async update(id: string, data: UpdateUsersDTO): Promise<Users> {
+    const user = await this.users
+      .findByIdAndUpdate(
+        id,
+        { $set: data },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException(`Usuário com id ${id} não encontrado`);
+    }
+    return user;
   }
 
   async findAll(page = 1, limit = 10) {

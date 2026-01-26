@@ -10,7 +10,16 @@ import {
 import { UsersServices } from './users.service';
 import { Users } from 'src/schemas/users/users.schema';
 import { CreateUsersDTO } from './dtos/create-users.dto';
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { UpdateUsersDTO } from './dtos/update-users.dto';
 
 @Controller('users')
 @ApiTags('Users')
@@ -32,6 +41,27 @@ export class UsersController {
   })
   create(@Body() body: CreateUsersDTO) {
     return this.usersServices.create(body);
+  }
+
+  @Patch(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID do usuário',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  @ApiOperation({
+    summary: 'Atualiza os dados do usuário.',
+    description: 'Teste',
+  })
+  @ApiCreatedResponse({
+    description: 'Usuário atualizado com sucesso',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Não foi possível atualizar o usuário. Verifique o id ou os parâmentros e tente novamente.',
+  })
+  update(@Param('id') id: string, @Body() body: UpdateUsersDTO) {
+    return this.usersServices.update(id, body);
   }
 
   @Get('/all')
