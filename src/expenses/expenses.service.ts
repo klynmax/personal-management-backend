@@ -57,4 +57,17 @@ export class ExpensesServices {
       },
     };
   }
+
+  async findById(id: string): Promise<Expenses> {
+    const expense = await this.expenses
+      .findOne({ _id: id, deleted: false })
+      .lean()
+      .exec();
+
+    if (!expense) {
+      throw new NotFoundException(`Despesa com id ${id} não encontrado`);
+    }
+
+    return expense;
+  }
 }

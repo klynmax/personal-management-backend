@@ -21,6 +21,7 @@ import {
 import { ExpensesServices } from './expenses.service';
 import { CreateExpensesDTO } from './dtos/create-expense.dto';
 import { UpdateExpensesDTO } from './dtos/update-expenses.dto';
+import { Expenses } from 'src/schemas/expenses.schema';
 
 @Controller('expenses')
 @ApiTags('Expenses')
@@ -75,5 +76,20 @@ export class ExpensesController {
   })
   findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
     return this.expensesService.findAll(Number(page) || 1, Number(limit) || 10);
+  }
+
+  @Get(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID da despesa',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  @ApiOperation({ summary: 'Busca uma despesa a partir do seu id' })
+  @ApiCreatedResponse({ description: 'Despesa encontrada com sucesso.' })
+  @ApiBadRequestResponse({
+    description: 'Despesa não encontrada. Verifique o id e tente novamente.',
+  })
+  async findById(@Param('id') id: string): Promise<Expenses> {
+    return this.expensesService.findById(id);
   }
 }
