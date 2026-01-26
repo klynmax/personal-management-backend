@@ -1,7 +1,7 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { CreateExpensesDTO } from './dtos/create-expense.dto';
-import { Expenses } from 'src/schemas/expenses.schema';
 import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Expenses } from 'src/schemas/expenses.schema';
+import { CreateExpensesDTO } from './dtos/create-expense.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateExpensesDTO } from './dtos/update-expenses.dto';
 
@@ -35,5 +35,26 @@ export class ExpensesServices {
     }
 
     return expense;
+  }
+
+  async findAll(page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+
+    const filter = { deleted: false };
+
+    const [data, total] = await Promise.all([
+      this.expenses.find(filter).skip(skip).limit(limit).lean().exec(),
+      this.expenses.countDocuments(filter),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPage: Math.ceil(total / limit),
+      },
+    };
   }
 }
