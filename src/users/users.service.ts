@@ -19,8 +19,8 @@ export class UsersServices {
 
   async update(id: string, data: UpdateUsersDTO): Promise<Users> {
     const user = await this.users
-      .findByIdAndUpdate(
-        id,
+      .findOneAndUpdate(
+        { _id: id, deleted: false },
         { $set: data },
         {
           new: true,
@@ -30,18 +30,22 @@ export class UsersServices {
       .exec();
 
     if (!user) {
-      throw new NotFoundException(`Usuário com id ${id} não encontrado`);
+      throw new NotFoundException('Usuário não encontrado ou já removido');
     }
+
     return user;
   }
 
   async findAll(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
+    const filter = { deleted: false };
+
     const [data, total] = await Promise.all([
-      this.users.find().skip(skip).limit(limit).lean().exec(),
-      this.users.countDocuments(),
+      this.users.find(filter).skip(skip).limit(limit).lean().exec(),
+      this.users.countDocuments(filter),
     ]);
+
     return {
       data,
       meta: {
@@ -54,10 +58,40 @@ export class UsersServices {
   }
 
   async findById(id: string): Promise<Users> {
-    const user = await this.users.findById(id).lean().exec();
+    const user = await this.users
+      .findOne({ _id: id, deleted: false })
+      .lean()
+      .exec();
+
     if (!user) {
       throw new NotFoundException(`Usuário com id ${id} não encontrado`);
     }
+
     return user;
+  }
+
+  async remove(id: string) {
+    const user = await this.users
+      .findOneAndUpdate(
+        { _id: id, deleted: false },
+        {
+          deleted: true,
+          deletedAt: new Date(),
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado ou já removido');
+    }
+
+    return {
+      message: 'Usuário removido com sucesso',
+      data: {
+        id: user._id,
+        deletedAt: user.deletedAt,
+      },
+    };
   }
 }

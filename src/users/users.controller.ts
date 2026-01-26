@@ -1,4 +1,15 @@
 import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+
+import {
   ApiTags,
   ApiParam,
   ApiQuery,
@@ -7,18 +18,10 @@ import {
   ApiCreatedResponse,
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
+
 import { UsersServices } from './users.service';
 import { Users } from 'src/schemas/users/users.schema';
 import { CreateUsersDTO } from './dtos/create-users.dto';
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
 import { UpdateUsersDTO } from './dtos/update-users.dto';
 
 @Controller('users')
@@ -90,5 +93,20 @@ export class UsersController {
   })
   async findById(@Param('id') id: string): Promise<Users> {
     return this.usersServices.findById(id);
+  }
+
+  @Delete(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID do usuário',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  @ApiOperation({ summary: 'Remove o usuário a partir do seu id' })
+  @ApiCreatedResponse({ description: 'Usuário removido com sucesso.' })
+  @ApiBadRequestResponse({
+    description: 'Usuário não removido. Verifique o id e tente novamente.',
+  })
+  remove(@Param('id') id: string) {
+    return this.usersServices.remove(id);
   }
 }

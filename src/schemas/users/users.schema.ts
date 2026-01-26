@@ -38,6 +38,12 @@ export class Users {
 
   @Prop({ enum: LevelUsersType, required: true })
   level: LevelUsersType;
+
+  @Prop({ default: false })
+  deleted: boolean;
+
+  @Prop()
+  deletedAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(Users);
