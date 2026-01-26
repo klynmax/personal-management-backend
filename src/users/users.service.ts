@@ -1,6 +1,6 @@
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Users } from 'src/schemas/users/users.schema';
+import { Users } from 'src/schemas/users.schema';
 import { CreateUsersDTO } from './dtos/create-users.dto';
 import { UpdateUsersDTO } from './dtos/update-users.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';

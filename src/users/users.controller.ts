@@ -20,7 +20,7 @@ import {
 } from '@nestjs/swagger';
 
 import { UsersServices } from './users.service';
-import { Users } from 'src/schemas/users/users.schema';
+import { Users } from 'src/schemas/users.schema';
 import { CreateUsersDTO } from './dtos/create-users.dto';
 import { UpdateUsersDTO } from './dtos/update-users.dto';
 
