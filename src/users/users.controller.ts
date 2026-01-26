@@ -1,15 +1,16 @@
 import {
   ApiTags,
-  ApiConsumes,
-  ApiCreatedResponse,
-  ApiOperation,
-  ApiBadRequestResponse,
   ApiParam,
+  ApiQuery,
+  ApiConsumes,
+  ApiOperation,
+  ApiCreatedResponse,
+  ApiBadRequestResponse,
 } from '@nestjs/swagger';
 import { UsersServices } from './users.service';
-import { CreateUsersDTO } from './dtos/create-users.dto';
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { Users } from 'src/schemas/users/users.schema';
+import { CreateUsersDTO } from './dtos/create-users.dto';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 
 @Controller('users')
 @ApiTags('Users')
@@ -34,8 +35,16 @@ export class UsersController {
   }
 
   @Get('/all')
-  findAll() {
-    return this.usersServices.findAll();
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiOperation({ summary: 'Busca todos os usuários cadastrado na API' })
+  @ApiCreatedResponse({ description: 'Busca realizada com sucesso.' })
+  @ApiBadRequestResponse({
+    description:
+      'Busca não realizada. Verifique a conexão ou os parametros passados.',
+  })
+  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
+    return this.usersServices.findAll(Number(page) || 1, Number(limit) || 10);
   }
 
   @Get(':id')

@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 import { Users } from 'src/schemas/users/users.schema';
 import { CreateUsersDTO } from './dtos/create-users.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class UsersServices {
@@ -16,8 +16,22 @@ export class UsersServices {
     return newUser.save();
   }
 
-  findAll() {
-    return this.users.find();
+  async findAll(page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.users.find().skip(skip).limit(limit).lean().exec(),
+      this.users.countDocuments(),
+    ]);
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPage: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findById(id: string): Promise<Users> {
