@@ -94,4 +94,14 @@ export class UsersServices {
       },
     };
   }
+
+  async findByEmail(email: string): Promise<Users | null> {
+    return this.users
+      .findOne({
+        email,
+        deleted: false,
+      })
+      .select('+password')
+      .exec();
+  }
 }
