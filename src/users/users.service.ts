@@ -104,4 +104,10 @@ export class UsersServices {
       .select('+password')
       .exec();
   }
+
+  async updateRefreshToken(userId: string, refreshToken: string | null) {
+    return this.users.findByIdAndUpdate(userId, {
+      refreshToken,
+    });
+  }
 }

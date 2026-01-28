@@ -1,9 +1,17 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 import type { Request } from 'express';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -20,6 +28,19 @@ export class AuthController {
   refresh(@Req() req: Request) {
     const user = req.user as { sub: string; email: string };
 
-    return this.authService.refresh(user.sub, user.email);
+    const refreshToken = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!refreshToken) {
+      throw new UnauthorizedException();
+    }
+
+    return this.authService.refresh(user.sub, user.email, refreshToken);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  logout(@Req() req: Request) {
+    const user = req.user as { sub: string };
+    return this.authService.logout(user.sub);
   }
 }

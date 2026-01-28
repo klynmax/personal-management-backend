@@ -42,10 +42,38 @@ export class AuthService {
       }),
     ]);
 
-    return { acessToken, refreshToken };
+    const hashedRefresh = await bcrypt.hash(refreshToken, 10);
+
+    await this.usersService.updateRefreshToken(userId, hashedRefresh);
+
+    return { acessToken: acessToken, refreshToken };
   }
 
-  async refresh(userId: string, email: string): Promise<AuthResponseDTO> {
-    return this.generateTokens(userId, email);
+  async refresh(
+    userId: string,
+    email: string,
+    refreshToken: string,
+  ): Promise<AuthResponseDTO> {
+    const user = await this.usersService.findById(userId);
+
+    if (!user || !user.refreshToken) {
+      throw new UnauthorizedException();
+    }
+
+    const isValid = await bcrypt.compare(refreshToken, user.refreshToken);
+
+    if (!isValid) {
+      throw new UnauthorizedException();
+    }
+
+    return this.generateTokens(user._id, user.email);
+  }
+
+  async logout(userId: string) {
+    await this.usersService.updateRefreshToken(userId, null);
+
+    return {
+      message: 'Logout realizado com sucesso',
+    };
   }
 }
