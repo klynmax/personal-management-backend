@@ -6,12 +6,20 @@ import {
   Controller,
   UseGuards,
   UnauthorizedException,
+  Get,
 } from '@nestjs/common';
 
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import type { Request, Response } from 'express';
+import IJwtPayload from 'src/interfaces/IJwtPayload';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 
@@ -87,5 +95,28 @@ export class AuthController {
     res.clearCookie('refreshToken', { path: '/' });
 
     return { ok: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description: 'Dados do usuário autenticado',
+    schema: {
+      example: {
+        id: '65cfa2d7e7f1b2a9c4e9a123',
+        name: 'João Pedro',
+        email: 'joao@email.com',
+        level: 'admin',
+        phone: '11999999999',
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Usuário não autenticado',
+  })
+  async me(@Req() req: Request) {
+    const user = req.user as IJwtPayload;
+    return this.authService.me(user.sub);
   }
 }

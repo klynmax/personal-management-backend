@@ -17,32 +17,39 @@ import {
   Query,
   Controller,
   Delete,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
+
+import type { Request } from 'express';
 
 import { ExpensesServices } from './expenses.service';
 import { CreateExpensesDTO } from './dtos/create-expense.dto';
 import { UpdateExpensesDTO } from './dtos/update-expenses.dto';
 import { Expenses } from 'src/schemas/expenses.schema';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-@Controller('expenses')
 @ApiTags('Expenses')
+@Controller('expenses')
+@UseGuards(JwtAuthGuard) // protege todas as rotas
 export class ExpensesController {
   constructor(private expensesService: ExpensesServices) {}
 
   @Post()
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({
-    summary: 'Cria uma nova despesa.',
-  })
-  @ApiCreatedResponse({
-    description: 'Despesa criada com sucesso',
-  })
+  @ApiOperation({ summary: 'Cria uma nova despesa.' })
+  @ApiCreatedResponse({ description: 'Despesa criada com sucesso' })
   @ApiBadRequestResponse({
     description:
       'Despesa não pode ser criada. Verifique os campos e tente novamente',
   })
-  create(@Body() body: CreateExpensesDTO) {
-    return this.expensesService.create(body);
+  create(@Req() req: Request, @Body() body: CreateExpensesDTO) {
+    const user = req.user as { sub: string };
+
+    return this.expensesService.create({
+      ...body,
+      userId: user.sub,
+    });
   }
 
   @Patch(':id')
@@ -51,32 +58,32 @@ export class ExpensesController {
     description: 'ID da despesa',
     example: '65cfa2d7e7f1b2a9c4e9a123',
   })
-  @ApiOperation({
-    summary: 'Atualiza os dados da despesa.',
-    description: 'Teste',
-  })
-  @ApiCreatedResponse({
-    description: 'Despesa atualizada com sucesso',
-  })
-  @ApiBadRequestResponse({
-    description:
-      'Não foi possível atualizar a despesa. Verifique o id ou os parâmentros e tente novamente.',
-  })
-  update(@Param('id') id: string, @Body() body: UpdateExpensesDTO) {
-    return this.expensesService.update(id, body);
+  update(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: UpdateExpensesDTO,
+  ) {
+    const user = req.user as { sub: string };
+
+    return this.expensesService.update(id, user.sub, body);
   }
 
   @Get('/all')
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiOperation({ summary: 'Busca todas as despesas cadastrado na API' })
-  @ApiCreatedResponse({ description: 'Busca realizada com sucesso.' })
-  @ApiBadRequestResponse({
-    description:
-      'Busca não realizada. Verifique a conexão ou os parametros passados.',
-  })
-  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
-    return this.expensesService.findAll(Number(page) || 1, Number(limit) || 10);
+  @ApiOperation({ summary: 'Busca todas as despesas do usuário logado' })
+  findAll(
+    @Req() req: Request,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    const user = req.user as { sub: string };
+
+    return this.expensesService.findAll(
+      user.sub,
+      Number(page) || 1,
+      Number(limit) || 10,
+    );
   }
 
   @Get(':id')
@@ -85,13 +92,13 @@ export class ExpensesController {
     description: 'ID da despesa',
     example: '65cfa2d7e7f1b2a9c4e9a123',
   })
-  @ApiOperation({ summary: 'Busca uma despesa a partir do seu id' })
-  @ApiCreatedResponse({ description: 'Despesa encontrada com sucesso.' })
-  @ApiBadRequestResponse({
-    description: 'Despesa não encontrada. Verifique o id e tente novamente.',
-  })
-  async findById(@Param('id') id: string): Promise<Expenses> {
-    return this.expensesService.findById(id);
+  async findById(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ): Promise<Expenses> {
+    const user = req.user as { sub: string };
+
+    return this.expensesService.findById(id, user.sub);
   }
 
   @Delete(':id')
@@ -100,12 +107,9 @@ export class ExpensesController {
     description: 'ID da despesa',
     example: '65cfa2d7e7f1b2a9c4e9a123',
   })
-  @ApiOperation({ summary: 'Remove a despesa a partir do seu id' })
-  @ApiCreatedResponse({ description: 'Despesa removida com sucesso.' })
-  @ApiBadRequestResponse({
-    description: 'Despesa não removida. Verifique o id e tente novamente.',
-  })
-  remove(@Param('id') id: string) {
-    return this.expensesService.remove(id);
+  remove(@Req() req: Request, @Param('id') id: string) {
+    const user = req.user as { sub: string };
+
+    return this.expensesService.remove(id, user.sub);
   }
 }

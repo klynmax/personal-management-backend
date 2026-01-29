@@ -1,8 +1,14 @@
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { UsersServices } from 'src/users/users.service';
 import { AuthResponseDTO } from './dto/auth-response.dto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { MeResponseDTO } from './dto/me-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,20 +28,19 @@ export class AuthService {
     return this.generateTokens(user._id, user.email);
   }
 
-  private async generateTokens(
-    userId: string,
-    email: string,
-  ): Promise<AuthResponseDTO> {
-    const payload = { sub: userId, email };
+  generateTokens(userId: string, email: string) {
+    const payload = {
+      sub: userId,
+      email,
+    };
 
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, { expiresIn: '15m' }),
-      this.jwtService.signAsync(payload, { expiresIn: '7d' }),
-    ]);
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: '15m',
+    });
 
-    // Salva hash do refresh token no banco
-    const hashedRefresh = await bcrypt.hash(refreshToken, 10);
-    await this.usersService.updateRefreshToken(userId, hashedRefresh);
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: '7d',
+    });
 
     return { accessToken, refreshToken };
   }
@@ -57,5 +62,21 @@ export class AuthService {
   async logout(userId: string) {
     await this.usersService.updateRefreshToken(userId, null);
     return { message: 'Logout realizado com sucesso' };
+  }
+
+  async me(userId: string): Promise<MeResponseDTO> {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    return {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      level: user.level,
+      phone: user.phone,
+    };
   }
 }

@@ -1,3 +1,107 @@
+// import { Model } from 'mongoose';
+// import { InjectModel } from '@nestjs/mongoose';
+// import { Expenses } from 'src/schemas/expenses.schema';
+// import { CreateExpensesDTO } from './dtos/create-expense.dto';
+// import { Injectable, NotFoundException } from '@nestjs/common';
+// import { UpdateExpensesDTO } from './dtos/update-expenses.dto';
+// import { StatusExpense } from 'src/enum/expenses.enum';
+
+// @Injectable()
+// export class ExpensesServices {
+//   constructor(
+//     @InjectModel(Expenses.name)
+//     private expenses: Model<Expenses>,
+//   ) {}
+
+//   // TODO: melhorar a criação quando tiver auth/JWT para pegar o id do usuário pela sessão.
+//   create(body: CreateExpensesDTO) {
+//     const newExpense = new this.expenses(body);
+//     return newExpense.save();
+//   }
+
+//   async update(id: string, data: UpdateExpensesDTO): Promise<Expenses> {
+//     const expense = await this.expenses
+//       .findByIdAndUpdate(
+//         { _id: id, deleted: false },
+//         { $set: data },
+//         {
+//           new: true,
+//           runValidators: true,
+//         },
+//       )
+//       .exec();
+
+//     if (!expense) {
+//       throw new NotFoundException('Despesa não encontrada ou já removida.');
+//     }
+
+//     return expense;
+//   }
+
+//   async findAll(page = 1, limit = 10) {
+//     const skip = (page - 1) * limit;
+
+//     const filter = { deleted: false };
+
+//     const [data, total] = await Promise.all([
+//       this.expenses.find(filter).skip(skip).limit(limit).lean().exec(),
+//       this.expenses.countDocuments(filter),
+//     ]);
+
+//     return {
+//       data,
+//       meta: {
+//         total,
+//         page,
+//         limit,
+//         totalPage: Math.ceil(total / limit),
+//       },
+//     };
+//   }
+
+//   async findById(id: string): Promise<Expenses> {
+//     const expense = await this.expenses
+//       .findOne({ _id: id, deleted: false })
+//       .lean()
+//       .exec();
+
+//     if (!expense) {
+//       throw new NotFoundException(`Despesa com id ${id} não encontrado`);
+//     }
+
+//     return expense;
+//   }
+
+//   async remove(id: string) {
+//     const expense = await this.expenses
+//       .findOneAndUpdate(
+//         { _id: id, deleted: false },
+//         {
+//           $set: {
+//             deleted: true,
+//             deletedAt: new Date(),
+//             status: StatusExpense.CANCELED,
+//           },
+//         },
+//         { new: true },
+//       )
+//       .exec();
+
+//     if (!expense) {
+//       throw new NotFoundException('Despesa não encontrada ou já removida');
+//     }
+
+//     return {
+//       message: 'Despesa cancelada com sucesso',
+//       data: {
+//         id: expense._id,
+//         status: expense.status,
+//         deletedAt: expense.deletedAt,
+//       },
+//     };
+//   }
+// }
+
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Expenses } from 'src/schemas/expenses.schema';
@@ -13,35 +117,39 @@ export class ExpensesServices {
     private expenses: Model<Expenses>,
   ) {}
 
-  // TODO: melhorar a criação quando tiver auth/JWT para pegar o id do usuário pela sessão.
-  create(body: CreateExpensesDTO) {
-    const newExpense = new this.expenses(body);
+  create(data: CreateExpensesDTO & { userId: string }) {
+    const newExpense = new this.expenses({
+      ...data,
+      userId: data.userId,
+    });
+
     return newExpense.save();
   }
 
-  async update(id: string, data: UpdateExpensesDTO): Promise<Expenses> {
+  async update(
+    id: string,
+    userId: string,
+    data: UpdateExpensesDTO,
+  ): Promise<Expenses> {
     const expense = await this.expenses
-      .findByIdAndUpdate(
-        { _id: id, deleted: false },
+      .findOneAndUpdate(
+        { _id: id, userId, deleted: false },
         { $set: data },
-        {
-          new: true,
-          runValidators: true,
-        },
+        { new: true, runValidators: true },
       )
       .exec();
 
     if (!expense) {
-      throw new NotFoundException('Despesa não encontrada ou já removida.');
+      throw new NotFoundException('Despesa não encontrada ou acesso negado.');
     }
 
     return expense;
   }
 
-  async findAll(page = 1, limit = 10) {
+  async findAll(userId: string, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
-    const filter = { deleted: false };
+    const filter = { deleted: false, userId };
 
     const [data, total] = await Promise.all([
       this.expenses.find(filter).skip(skip).limit(limit).lean().exec(),
@@ -59,23 +167,23 @@ export class ExpensesServices {
     };
   }
 
-  async findById(id: string): Promise<Expenses> {
+  async findById(id: string, userId: string): Promise<Expenses> {
     const expense = await this.expenses
-      .findOne({ _id: id, deleted: false })
+      .findOne({ _id: id, userId, deleted: false })
       .lean()
       .exec();
 
     if (!expense) {
-      throw new NotFoundException(`Despesa com id ${id} não encontrado`);
+      throw new NotFoundException('Despesa não encontrada ou acesso negado.');
     }
 
     return expense;
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     const expense = await this.expenses
       .findOneAndUpdate(
-        { _id: id, deleted: false },
+        { _id: id, userId, deleted: false },
         {
           $set: {
             deleted: true,
@@ -88,7 +196,7 @@ export class ExpensesServices {
       .exec();
 
     if (!expense) {
-      throw new NotFoundException('Despesa não encontrada ou já removida');
+      throw new NotFoundException('Despesa não encontrada ou acesso negado.');
     }
 
     return {
