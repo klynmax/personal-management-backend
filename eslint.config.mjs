@@ -58,5 +58,13 @@ export default tseslint.config(
       quotes: 'off',
       '@typescript-eslint/quotes': 'off',
     },
-  }
+  },
+  {
+    files: ['**/main.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+    }
+  },
 );

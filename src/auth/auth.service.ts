@@ -13,16 +13,11 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<AuthResponseDTO> {
     const user = await this.usersService.findByEmail(email);
-
-    if (!user) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
+    if (!user) throw new UnauthorizedException('Credenciais inválidas');
 
     const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
+    if (!passwordMatch)
       throw new UnauthorizedException('Credenciais inválidas');
-    }
 
     return this.generateTokens(user._id, user.email);
   }
@@ -33,20 +28,16 @@ export class AuthService {
   ): Promise<AuthResponseDTO> {
     const payload = { sub: userId, email };
 
-    const [acessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        expiresIn: '15m',
-      }),
-      this.jwtService.signAsync(payload, {
-        expiresIn: '7d',
-      }),
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, { expiresIn: '15m' }),
+      this.jwtService.signAsync(payload, { expiresIn: '7d' }),
     ]);
 
+    // Salva hash do refresh token no banco
     const hashedRefresh = await bcrypt.hash(refreshToken, 10);
-
     await this.usersService.updateRefreshToken(userId, hashedRefresh);
 
-    return { acessToken: acessToken, refreshToken };
+    return { accessToken, refreshToken };
   }
 
   async refresh(
@@ -55,25 +46,16 @@ export class AuthService {
     refreshToken: string,
   ): Promise<AuthResponseDTO> {
     const user = await this.usersService.findById(userId);
-
-    if (!user || !user.refreshToken) {
-      throw new UnauthorizedException();
-    }
+    if (!user || !user.refreshToken) throw new UnauthorizedException();
 
     const isValid = await bcrypt.compare(refreshToken, user.refreshToken);
-
-    if (!isValid) {
-      throw new UnauthorizedException();
-    }
+    if (!isValid) throw new UnauthorizedException();
 
     return this.generateTokens(user._id, user.email);
   }
 
   async logout(userId: string) {
     await this.usersService.updateRefreshToken(userId, null);
-
-    return {
-      message: 'Logout realizado com sucesso',
-    };
+    return { message: 'Logout realizado com sucesso' };
   }
 }
