@@ -85,14 +85,30 @@ export class AuthController {
     return { ok: true };
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
+  // @Post('logout')
+  // async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  //   const user = req.user as { sub: string };
+  //   await this.authService.logout(user.sub);
+
+  //   res.clearCookie('accessToken', { path: '/' });
+  //   res.clearCookie('refreshToken', { path: '/' });
+
+  //   return { ok: true };
+  // }
+
   @Post('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const user = req.user as { sub: string };
-    await this.authService.logout(user.sub);
+    const user = req.user as { sub?: string };
 
+    // limpa cookies SEMPRE
     res.clearCookie('accessToken', { path: '/' });
     res.clearCookie('refreshToken', { path: '/' });
+
+    // se houver usuário, revoga refresh no banco
+    if (user?.sub) {
+      await this.authService.logout(user.sub);
+    }
 
     return { ok: true };
   }
