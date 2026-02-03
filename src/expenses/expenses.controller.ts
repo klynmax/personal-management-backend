@@ -119,7 +119,7 @@ export class ExpensesController {
   @ApiOperation({
     summary: 'Resumo das despesas do mês corrente',
     description:
-      'Retorna a soma total das despesas, a quantidade de despesas e a data da última compra realizada no mês corrente.',
+      'Retorna a soma total das despesas, a quantidade de despesas, o total gasto por tipo de pagamento (debit e voucher) e a data da última compra realizada no mês corrente.',
   })
   @ApiOkResponse({
     description: 'Resumo mensal das despesas',
@@ -128,16 +128,26 @@ export class ExpensesController {
       properties: {
         totalAmount: {
           type: 'number',
-          example: 415.39,
+          example: 1250.75,
         },
         totalExpenses: {
           type: 'number',
-          example: 3,
+          example: 8,
+        },
+        totalDebit: {
+          type: 'number',
+          example: 830.25,
+          description: 'Total gasto com pagamento via débito',
+        },
+        totalVoucher: {
+          type: 'number',
+          example: 420.5,
+          description: 'Total gasto com pagamento via voucher',
         },
         lastPurchaseDate: {
           type: 'string',
           format: 'date-time',
-          example: '2026-01-26T21:09:39.245Z',
+          example: '2026-02-18T20:11:00.000Z',
           nullable: true,
         },
       },

@@ -129,12 +129,12 @@ export class ExpensesServices {
       999,
     );
 
-    const [result] = await this.expenses.aggregate<MonthlySummary>([
+    const result = await this.expenses.aggregate<MonthlySummary>([
       {
         $match: {
           userId,
           deleted: false,
-          status: StatusExpense.ACTIVE, // usa o enum 👍
+          status: StatusExpense.ACTIVE,
           createdAt: {
             $gte: startOfMonth,
             $lte: endOfMonth,
@@ -147,6 +147,17 @@ export class ExpensesServices {
           totalAmount: { $sum: '$amount' },
           totalExpenses: { $sum: 1 },
           lastPurchaseDate: { $max: '$createdAt' },
+
+          totalDebit: {
+            $sum: {
+              $cond: [{ $eq: ['$paymentType', 'debit'] }, '$amount', 0],
+            },
+          },
+          totalVoucher: {
+            $sum: {
+              $cond: [{ $eq: ['$paymentType', 'voucher'] }, '$amount', 0],
+            },
+          },
         },
       },
       {
@@ -155,15 +166,21 @@ export class ExpensesServices {
           totalAmount: 1,
           totalExpenses: 1,
           lastPurchaseDate: 1,
+          totalDebit: 1,
+          totalVoucher: 1,
         },
       },
     ]);
 
+    const summary = result[0];
+
     return (
-      result ?? {
+      summary ?? {
         totalAmount: 0,
         totalExpenses: 0,
         lastPurchaseDate: null,
+        totalDebit: 0,
+        totalVoucher: 0,
       }
     );
   }
