@@ -6,6 +6,7 @@ import {
   ApiOperation,
   ApiCreatedResponse,
   ApiBadRequestResponse,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 
 import {
@@ -28,6 +29,7 @@ import { CreateExpensesDTO } from './dtos/create-expense.dto';
 import { UpdateExpensesDTO } from './dtos/update-expenses.dto';
 import { Expenses } from 'src/schemas/expenses.schema';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { AuthenticatedRequest } from 'src/interfaces/AuthenticatedRequest';
 
 @ApiTags('Expenses')
 @Controller('expenses')
@@ -111,5 +113,38 @@ export class ExpensesController {
     const user = req.user as { sub: string };
 
     return this.expensesService.remove(id, user.sub);
+  }
+
+  @Get('summary/month')
+  @ApiOperation({
+    summary: 'Resumo das despesas do mês corrente',
+    description:
+      'Retorna a soma total das despesas, a quantidade de despesas e a data da última compra realizada no mês corrente.',
+  })
+  @ApiOkResponse({
+    description: 'Resumo mensal das despesas',
+    schema: {
+      type: 'object',
+      properties: {
+        totalAmount: {
+          type: 'number',
+          example: 415.39,
+        },
+        totalExpenses: {
+          type: 'number',
+          example: 3,
+        },
+        lastPurchaseDate: {
+          type: 'string',
+          format: 'date-time',
+          example: '2026-01-26T21:09:39.245Z',
+          nullable: true,
+        },
+      },
+    },
+  })
+  async getMonthlySummary(@Req() req: AuthenticatedRequest) {
+    const userId = req.user.sub;
+    return this.expensesService.getMonthlySummary(userId);
   }
 }
