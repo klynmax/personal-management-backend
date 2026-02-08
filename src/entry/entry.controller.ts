@@ -3,6 +3,7 @@ import {
   ApiConsumes,
   ApiCreatedResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -10,6 +11,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Req,
@@ -19,6 +21,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { EntryServices } from './entry.service';
 import { CreateEntryDTO } from './dtos/create-entry.dto';
 import { Request } from 'express';
+import { Entry } from 'src/schemas/entry.schema';
 
 @ApiTags('Entry')
 @Controller('entry')
@@ -59,5 +62,17 @@ export class EntryController {
       Number(page) || 1,
       Number(limit) || 10,
     );
+  }
+
+  @Get(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID da entrada',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  async findById(@Req() req: Request, @Param('id') id: string): Promise<Entry> {
+    const user = req.user as { sub: string };
+
+    return this.entryService.findById(id, user.sub);
   }
 }

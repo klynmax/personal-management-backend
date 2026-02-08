@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Entry } from 'src/schemas/entry.schema';
@@ -38,5 +38,20 @@ export class EntryServices {
         totalPage: Math.ceil(total / limit),
       },
     };
+  }
+
+  async findById(id: string, userId: string): Promise<Entry> {
+    const entry = await this.entry
+      .findOne({ _id: id, userId, deleted: false })
+      .lean()
+      .exec();
+
+    if (!entry) {
+      throw new NotFoundException(
+        'Entrada não encontrada ou o acesso foi negado',
+      );
+    }
+
+    return entry;
   }
 }
