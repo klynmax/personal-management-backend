@@ -12,6 +12,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -22,6 +23,7 @@ import { EntryServices } from './entry.service';
 import { CreateEntryDTO } from './dtos/create-entry.dto';
 import { Request } from 'express';
 import { Entry } from 'src/schemas/entry.schema';
+import { UpdateEntryDTO } from './dtos/update-entry.dto';
 
 @ApiTags('Entry')
 @Controller('entry')
@@ -70,9 +72,26 @@ export class EntryController {
     description: 'ID da entrada',
     example: '65cfa2d7e7f1b2a9c4e9a123',
   })
+  @ApiOperation({ summary: 'Busca uma entrada a partir do id' })
   async findById(@Req() req: Request, @Param('id') id: string): Promise<Entry> {
     const user = req.user as { sub: string };
 
     return this.entryService.findById(id, user.sub);
+  }
+
+  @Patch(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID da entrada',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  update(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: UpdateEntryDTO,
+  ) {
+    const user = req.user as { sub: string };
+
+    return this.entryService.update(id, user.sub, body);
   }
 }

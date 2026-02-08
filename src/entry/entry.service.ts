@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Entry } from 'src/schemas/entry.schema';
 import { CreateEntryDTO } from './dtos/create-entry.dto';
+import { UpdateEntryDTO } from './dtos/update-entry.dto';
 
 @Injectable()
 export class EntryServices {
@@ -50,6 +51,22 @@ export class EntryServices {
       throw new NotFoundException(
         'Entrada não encontrada ou o acesso foi negado',
       );
+    }
+
+    return entry;
+  }
+
+  async update(id: string, userId: string, data: UpdateEntryDTO) {
+    const entry = await this.entry
+      .findOneAndUpdate(
+        { _id: id, userId, deleted: false },
+        { $set: data },
+        { new: true, runValidators: true },
+      )
+      .exec();
+
+    if (!entry) {
+      throw new NotFoundException('Despesa não encontrada ou acesso negado.');
     }
 
     return entry;
