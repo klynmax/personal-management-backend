@@ -2,6 +2,7 @@ import {
   ApiBadRequestResponse,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -25,6 +26,8 @@ import { CreateEntryDTO } from './dtos/create-entry.dto';
 import { Request } from 'express';
 import { Entry } from 'src/schemas/entry.schema';
 import { UpdateEntryDTO } from './dtos/update-entry.dto';
+import { AuthenticatedRequest } from 'src/interfaces/AuthenticatedRequest';
+import { MonthlyEntrySummaryDto } from './dtos/monthly-entry-summary.dto';
 
 @ApiTags('Entry')
 @Controller('entry')
@@ -106,5 +109,20 @@ export class EntryController {
     const user = req.user as { sub: string };
 
     return this.entryService.remove(id, user.sub);
+  }
+
+  @Get('summary/month')
+  @ApiOperation({
+    summary: 'Resumo mensal de entradas',
+    description:
+      'Retorna o saldo total, quantidade de entradas e a data da última entrada do mês corrente do usuário autenticado.',
+  })
+  @ApiOkResponse({
+    description: 'Resumo mensal calculado com sucesso',
+    type: MonthlyEntrySummaryDto,
+  })
+  async getMonthlySummary(@Req() req: AuthenticatedRequest) {
+    const userId = req.user.sub;
+    return this.entryService.getMonthlySummary(userId);
   }
 }

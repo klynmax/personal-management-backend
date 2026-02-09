@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Entry } from 'src/schemas/entry.schema';
 import { CreateEntryDTO } from './dtos/create-entry.dto';
 import { UpdateEntryDTO } from './dtos/update-entry.dto';
+import { IMonthlyEntrySummary } from 'src/interfaces/IMonthlyEntrySummary';
 
 @Injectable()
 export class EntryServices {
@@ -97,5 +98,66 @@ export class EntryServices {
         deletedAt: expense.deletedAt,
       },
     };
+  }
+
+  async getMonthlySummary(userId: string): Promise<IMonthlyEntrySummary> {
+    const now = new Date();
+
+    const startOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1,
+      0,
+      0,
+      0,
+      0,
+    );
+
+    const endOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+
+    const result = await this.entry.aggregate<IMonthlyEntrySummary>([
+      {
+        $match: {
+          userId,
+          deleted: false,
+          createdAt: {
+            $gte: startOfMonth,
+            $lte: endOfMonth,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          balance: { $sum: '$amount' },
+          totalEntries: { $sum: 1 },
+          lastEntry: { $max: '$createdAt' },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          balance: 1,
+          totalEntries: 1,
+          lastEntry: 1,
+        },
+      },
+    ]);
+
+    return (
+      result[0] ?? {
+        balance: 0,
+        totalEntries: 0,
+        lastEntry: null,
+      }
+    );
   }
 }
