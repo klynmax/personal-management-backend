@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { UsersModule } from './users/users.module';
+import { EntryModule } from './entry/entry.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ExpensesModules } from './expenses/expenses.module';
-import { AuthModule } from './auth/auth.module';
-import { EntryModule } from './entry/entry.module';
+import { CreditCardModule } from './creditCard/creditCard.module';
 
 @Module({
   imports: [
@@ -23,10 +24,11 @@ import { EntryModule } from './entry/entry.module';
         return { uri };
       },
     }),
-    UsersModule,
-    ExpensesModules,
     AuthModule,
     EntryModule,
+    UsersModule,
+    ExpensesModules,
+    CreditCardModule,
   ],
   controllers: [],
   providers: [],
