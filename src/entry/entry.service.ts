@@ -71,4 +71,31 @@ export class EntryServices {
 
     return entry;
   }
+
+  async remove(id: string, userId: string) {
+    const expense = await this.entry
+      .findOneAndUpdate(
+        { _id: id, userId, deleted: false },
+        {
+          $set: {
+            deleted: true,
+            deletedAt: new Date(),
+          },
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!expense) {
+      throw new NotFoundException('Entrada não encontrada ou acesso negado.');
+    }
+
+    return {
+      message: 'Entrada cancelada com sucesso',
+      data: {
+        id: expense._id,
+        deletedAt: expense.deletedAt,
+      },
+    };
+  }
 }

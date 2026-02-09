@@ -10,6 +10,7 @@ import {
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -93,5 +94,17 @@ export class EntryController {
     const user = req.user as { sub: string };
 
     return this.entryService.update(id, user.sub, body);
+  }
+
+  @Delete(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID da despesa',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  remove(@Req() req: Request, @Param('id') id: string) {
+    const user = req.user as { sub: string };
+
+    return this.entryService.remove(id, user.sub);
   }
 }
