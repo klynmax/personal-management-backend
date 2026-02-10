@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreditCard } from 'src/schemas/creditCard.schema';
 import { CreateCreditCardDto } from './dtos/create-credit-card.dto';
+import { UpdateCreditCardDto } from './dtos/update-credit-card.dto';
 
 @Injectable()
 export class CreditCardServices {
@@ -51,5 +52,21 @@ export class CreditCardServices {
     }
 
     return entry;
+  }
+
+  async update(id: string, userId: string, data: UpdateCreditCardDto) {
+    const card = await this.creditCard
+      .findByIdAndUpdate(
+        { _id: id, userId, deleted: false },
+        { $set: data },
+        { new: true, runValidators: true },
+      )
+      .exec();
+
+    if (!card) {
+      throw new NotFoundException('Cartão não encontrado ou acesso negado.');
+    }
+
+    return card;
   }
 }

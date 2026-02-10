@@ -13,6 +13,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -22,6 +23,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateCreditCardDto } from './dtos/create-credit-card.dto';
 import { Request } from 'express';
 import { CreditCard } from 'src/schemas/creditCard.schema';
+import { UpdateCreditCardDto } from './dtos/update-credit-card.dto';
 
 @ApiTags('CreditCard')
 @Controller('creditCard')
@@ -77,5 +79,21 @@ export class CreditCardController {
   ): Promise<CreditCard> {
     const user = req.user as { sub: string };
     return this.creditCardService.findById(id, user.sub);
+  }
+
+  @Patch(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID do cartão',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  @ApiOperation({ summary: 'Altera um cartão a partir do id' })
+  update(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: UpdateCreditCardDto,
+  ) {
+    const user = req.user as { sub: string };
+    return this.creditCardService.update(id, user.sub, body);
   }
 }
