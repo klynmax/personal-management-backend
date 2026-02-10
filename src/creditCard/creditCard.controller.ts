@@ -11,6 +11,7 @@ import { CreditCardServices } from './creditCard.service';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -95,5 +96,17 @@ export class CreditCardController {
   ) {
     const user = req.user as { sub: string };
     return this.creditCardService.update(id, user.sub, body);
+  }
+
+  @Delete(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID do cartão',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  remove(@Req() req: Request, @Param('id') id: string) {
+    const user = req.user as { sub: string };
+
+    return this.creditCardService.remove(id, user.sub);
   }
 }
