@@ -4,4 +4,8 @@ export enum BrandCard {
   VISA = 'visa',
   HIPERCARD = 'hipercard',
   MASTERCARD = 'mastercard',
+  AURA = 'aura',
+  DISCOVER = 'discover',
+  DINERS = 'diners',
+  JCB = 'jcb',
 }

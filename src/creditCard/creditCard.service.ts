@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreditCard } from 'src/schemas/creditCard.schema';
@@ -36,5 +36,20 @@ export class CreditCardServices {
         totalPage: Math.ceil(total / limit),
       },
     };
+  }
+
+  async findById(id: string, userId: string): Promise<CreditCard> {
+    const entry = await this.creditCard
+      .findOne({ _id: id, userId, deleted: false })
+      .lean()
+      .exec();
+
+    if (!entry) {
+      throw new NotFoundException(
+        'Cartão não encontrado ou o acesso foi negado',
+      );
+    }
+
+    return entry;
   }
 }

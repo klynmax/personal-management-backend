@@ -3,6 +3,7 @@ import {
   ApiConsumes,
   ApiCreatedResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -11,6 +12,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Req,
@@ -19,6 +21,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateCreditCardDto } from './dtos/create-credit-card.dto';
 import { Request } from 'express';
+import { CreditCard } from 'src/schemas/creditCard.schema';
 
 @ApiTags('CreditCard')
 @Controller('creditCard')
@@ -59,5 +62,20 @@ export class CreditCardController {
       Number(page) || 1,
       Number(limit) || 10,
     );
+  }
+
+  @Get(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID do cartão',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  @ApiOperation({ summary: 'Busca um cartão a partir do id' })
+  async findById(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ): Promise<CreditCard> {
+    const user = req.user as { sub: string };
+    return this.creditCardService.findById(id, user.sub);
   }
 }
