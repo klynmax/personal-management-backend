@@ -6,6 +6,7 @@ import { EntryModule } from './entry/entry.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ExpensesModules } from './expenses/expenses.module';
 import { CreditCardModule } from './creditCard/creditCard.module';
+import { ExpenseCardModule } from './expenseCard/expenseCard.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { CreditCardModule } from './creditCard/creditCard.module';
     UsersModule,
     ExpensesModules,
     CreditCardModule,
+    ExpenseCardModule,
   ],
   controllers: [],
   providers: [],
