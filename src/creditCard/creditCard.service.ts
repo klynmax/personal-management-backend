@@ -96,4 +96,76 @@ export class CreditCardServices {
       },
     };
   }
+
+  async getSummary(userId: string) {
+    const cards = await this.creditCard
+      .find({ userId, deleted: false })
+      .lean()
+      .exec();
+
+    if (!cards.length) {
+      return {
+        totalCards: 0,
+        totalLimit: 0,
+        nextDue: null,
+        bestCardForPurchase: null,
+      };
+    }
+
+    const today = new Date();
+    const currentDay = today.getDate();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    // 1️ Total de cartões
+    const totalCards = cards.length;
+
+    // 2️ Limite total
+    const totalLimit = cards.reduce((sum, card) => sum + card.limit, 0);
+
+    // 3️ Próximo vencimento
+    const dueDates = cards.map((card) => {
+      let dueDate = new Date(currentYear, currentMonth, card.dueDay);
+
+      if (dueDate < today) {
+        dueDate = new Date(currentYear, currentMonth + 1, card.dueDay);
+      }
+
+      return {
+        date: dueDate,
+        surname: card.surname,
+      };
+    });
+
+    dueDates.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const nextDueDate = dueDates[0];
+    const formattedNextDue =
+      `${String(nextDueDate.date.getDate()).padStart(2, '0')}/` +
+      `${String(nextDueDate.date.getMonth() + 1).padStart(2, '0')}/` +
+      `${nextDueDate.date.getFullYear()} - ${nextDueDate.surname}`;
+
+    // 4️ Melhor cartão para compra
+    const eligibleCards = cards.filter(
+      (card) => currentDay >= card.bestPurchaseDay,
+    );
+
+    const bestCard = eligibleCards.sort(
+      (a, b) => a.bestPurchaseDay - b.bestPurchaseDay,
+    )[0];
+
+    return {
+      totalCards,
+      totalLimit,
+      nextDue: formattedNextDue,
+      bestCardForPurchase: bestCard
+        ? {
+            id: bestCard._id,
+            name: bestCard.name,
+            surname: bestCard.surname,
+            bestPurchaseDay: bestCard.bestPurchaseDay,
+          }
+        : null,
+    };
+  }
 }

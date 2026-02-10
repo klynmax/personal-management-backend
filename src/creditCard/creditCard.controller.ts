@@ -2,6 +2,7 @@ import {
   ApiBadRequestResponse,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -25,6 +26,8 @@ import { CreateCreditCardDto } from './dtos/create-credit-card.dto';
 import { Request } from 'express';
 import { CreditCard } from 'src/schemas/creditCard.schema';
 import { UpdateCreditCardDto } from './dtos/update-credit-card.dto';
+import { AuthenticatedRequest } from 'src/interfaces/AuthenticatedRequest';
+import { BestCardForPurchaseDto } from './dtos/monthly-credit-card-summary.dto';
 
 @ApiTags('CreditCard')
 @Controller('creditCard')
@@ -108,5 +111,19 @@ export class CreditCardController {
     const user = req.user as { sub: string };
 
     return this.creditCardService.remove(id, user.sub);
+  }
+
+  @Get('summary/month')
+  @ApiOperation({
+    summary: 'Resumo mensal dos cartões',
+    description: 'Retorna a descrição do cartão cadastrado pelo usuário',
+  })
+  @ApiOkResponse({
+    description: 'Resumo mensal calculado com sucesso',
+    type: BestCardForPurchaseDto,
+  })
+  async getMonthlySummary(@Req() req: AuthenticatedRequest) {
+    const userId = req.user.sub;
+    return this.creditCardService.getSummary(userId);
   }
 }
