@@ -1,7 +1,7 @@
+import type { Request } from 'express';
+import { Strategy } from 'passport-jwt';
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-jwt';
-import type { Request } from 'express';
 
 interface JwtPayload {
   sub: string;

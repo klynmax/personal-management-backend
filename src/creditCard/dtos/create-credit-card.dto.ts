@@ -1,11 +1,12 @@
 import {
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
   Max,
   Min,
+  IsEnum,
+  IsString,
+  IsNumber,
+  IsNotEmpty,
 } from 'class-validator';
+
 import { BrandCard } from 'src/enum/creditCard.enum';
 
 export class CreateCreditCardDto {

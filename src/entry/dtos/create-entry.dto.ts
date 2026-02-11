@@ -1,10 +1,10 @@
 import {
   IsEnum,
-  IsNotEmpty,
   IsNumber,
+  IsString,
+  IsNotEmpty,
   IsOptional,
   IsPositive,
-  IsString,
 } from 'class-validator';
 
 import { Type } from 'class-transformer';

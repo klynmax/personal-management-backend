@@ -1,36 +1,34 @@
 import {
-  ApiTags,
-  ApiParam,
-  ApiQuery,
-  ApiConsumes,
-  ApiOperation,
-  ApiCreatedResponse,
-  ApiBadRequestResponse,
-  ApiOkResponse,
-} from '@nestjs/swagger';
-
-import {
   Get,
+  Req,
   Body,
   Post,
   Param,
   Patch,
   Query,
-  Controller,
   Delete,
-  Req,
   UseGuards,
+  Controller,
 } from '@nestjs/common';
 
+import {
+  ApiTags,
+  ApiParam,
+  ApiQuery,
+  ApiConsumes,
+  ApiOperation,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiBadRequestResponse,
+} from '@nestjs/swagger';
+
 import type { Request } from 'express';
-
 import { ExpensesServices } from './expenses.service';
-import { CreateExpensesDTO } from './dtos/create-expense.dto';
-import { UpdateExpensesDTO } from './dtos/update-expenses.dto';
 import { Expenses } from 'src/schemas/expenses.schema';
+import { CreateExpensesDTO } from './dtos/create-expense.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { UpdateExpensesDTO } from './dtos/update-expenses.dto';
 import { AuthenticatedRequest } from 'src/interfaces/AuthenticatedRequest';
-
 @ApiTags('Expenses')
 @Controller('expenses')
 @UseGuards(JwtAuthGuard) // protege todas as rotas

@@ -1,13 +1,14 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsNotEmpty,
-  IsEmail,
-  IsOptional,
   IsEnum,
+  IsEmail,
+  Matches,
   MinLength,
   MaxLength,
-  Matches,
+  IsNotEmpty,
+  IsOptional,
 } from 'class-validator';
+
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { LevelUsersType, StatusUsersType } from 'src/enum/users.enum';
 
 export class CreateUsersDTO {

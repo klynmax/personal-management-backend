@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { BrandCard } from 'src/enum/creditCard.enum';
 import { HydratedDocument } from 'mongoose';
+import { BrandCard } from 'src/enum/creditCard.enum';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type CreditCardDocument = HydratedDocument<CreditCard>;
 

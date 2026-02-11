@@ -1,10 +1,10 @@
 import {
-  IsNotEmpty,
-  IsString,
+  IsEnum,
   IsNumber,
+  IsString,
+  IsNotEmpty,
   IsPositive,
   IsOptional,
-  IsEnum,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentType, StatusExpense } from 'src/enum/expenses.enum';

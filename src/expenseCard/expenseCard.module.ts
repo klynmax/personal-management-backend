@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ExpenseCardController } from './expenseCard.controller';
-import { ExpenseCardService } from './expenseCard.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ExpenseCard, ExpenseCardSchema } from 'src/schemas/expenseCard.schema';
+import { ExpenseCardService } from './expenseCard.service';
+import { ExpenseCardController } from './expenseCard.controller';
 import { CreditCard, CreditCardSchema } from 'src/schemas/creditCard.schema';
+import { ExpenseCard, ExpenseCardSchema } from 'src/schemas/expenseCard.schema';
 
 @Module({
   imports: [

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Entry, EntrySchema } from 'src/schemas/entry.schema';
-import { EntryController } from './entry.controller';
 import { EntryServices } from './entry.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { EntryController } from './entry.controller';
+import { Entry, EntrySchema } from 'src/schemas/entry.schema';
 
 @Module({
   imports: [

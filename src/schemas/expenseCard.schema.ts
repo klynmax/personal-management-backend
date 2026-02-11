@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type ExpenseCardDocument = HydratedDocument<ExpenseCard>;
 

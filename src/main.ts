@@ -1,6 +1,6 @@
 import { AppModule } from './app.module';
-import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
+import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './config/swagger.config';
 
@@ -20,7 +20,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: ['http://localhost:3000'], // front
-    credentials: true, // 🔥 OBRIGATÓRIO para cookies
+    credentials: true, // OBRIGATÓRIO para cookies
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });

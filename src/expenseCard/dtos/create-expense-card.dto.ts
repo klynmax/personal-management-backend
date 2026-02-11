@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import {
   Min,
   IsNumber,
@@ -8,6 +7,7 @@ import {
   IsDateString,
 } from 'class-validator';
 
+import { ApiProperty } from '@nestjs/swagger';
 export class CreateExpenseCardDto {
   @ApiProperty({
     example: '43e9aec1-b811-448b-b3c2-75a6b8a34f24',
