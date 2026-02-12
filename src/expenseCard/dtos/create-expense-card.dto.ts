@@ -50,11 +50,35 @@ export class CreateExpenseCardDto {
   @Min(0)
   amount: number;
 
+  // @ApiProperty({
+  //   example: '2026-08-10',
+  //   description:
+  //     'Data da última parcela da despesa (data de finalização da compra)',
+  // })
+  // @IsDateString()
+  // endDate: Date;
+
+  @ApiProperty({
+    example: 'Nubank',
+    description: 'Nome da agência bancaria dona do cartão',
+  })
+  @IsString()
+  @IsNotEmpty()
+  cardName: string;
+
+  @ApiProperty({
+    example: 'Visa',
+    description: 'Nome da bandeira do cartão',
+  })
+  @IsString()
+  @IsNotEmpty()
+  brand: string;
+
   @ApiProperty({
     example: '2026-08-10',
     description:
       'Data da última parcela da despesa (data de finalização da compra)',
   })
   @IsDateString()
-  endDate: Date;
+  purchaseDate: Date;
 }

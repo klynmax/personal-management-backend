@@ -9,32 +9,50 @@ export class ExpenseCard {
   @Prop({ type: String, default: uuidv4 })
   _id: string;
 
-  @Prop({ type: String, required: true, index: true })
-  userId: string;
+  @Prop({ required: true, index: true })
+  userId: string; // 👈 ADICIONE ISSO
 
-  @Prop({ type: String, required: true, index: true })
+  @Prop({ required: true, index: true })
   cardId: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ required: true })
+  cardName: string;
+
+  @Prop({ required: true })
+  brand: string;
+
+  @Prop({ required: true })
   category: string;
 
-  @Prop({ type: String })
+  @Prop()
   description: string;
 
-  @Prop({ type: Number, required: true, min: 1 })
-  totalInstallments: number;
-
-  @Prop({ type: Number, required: true, min: 0 })
+  @Prop({ required: true })
   amount: number;
 
-  @Prop({ type: Boolean, default: false, index: true })
+  @Prop({ required: true })
+  totalAmount: number;
+
+  @Prop({ required: true })
+  installmentNumber: number;
+
+  @Prop({ required: true })
+  totalInstallments: number;
+
+  @Prop({ required: true })
+  purchaseDate: Date;
+
+  @Prop({ required: true, index: true })
+  dueDate: Date;
+
+  @Prop({ type: String }) // 👈 NÃO use ObjectId aqui
+  parentExpenseId?: string;
+
+  @Prop({ default: false })
+  paid: boolean;
+
+  @Prop({ default: false }) // 👈 ADICIONE ISSO
   deleted: boolean;
-
-  @Prop({ type: Date, default: null })
-  deletedAt?: Date;
-
-  @Prop({ type: Date, required: true, index: true })
-  endDate: Date;
 }
 
 export const ExpenseCardSchema = SchemaFactory.createForClass(ExpenseCard);
