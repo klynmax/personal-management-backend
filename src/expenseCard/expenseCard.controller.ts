@@ -29,6 +29,7 @@ import { ExpenseCardService } from './expenseCard.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateExpenseCardDto } from './dtos/create-expense-card.dto';
 import { UpdateExpenseCardDto } from './dtos/update-expense-card.dto';
+import { ExpenseCard } from 'src/schemas/expenseCard.schema';
 @ApiTags('ExpenseCard')
 @Controller('expenseCard')
 @UseGuards(JwtAuthGuard)
@@ -56,45 +57,6 @@ export class ExpenseCardController {
     };
   }
 
-  // @Put(':id')
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOperation({ summary: 'Editar despesa parcelada do cartão' })
-  // @ApiParam({
-  //   name: 'id',
-  //   description: 'ID agrupador das parcelas',
-  //   example: '65f1c2e8a9f1a23b4c567890',
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'Despesa atualizada com sucesso',
-  // })
-  // @ApiResponse({
-  //   status: 404,
-  //   description: 'Cartão ou despesa não encontrada',
-  // })
-  // @ApiResponse({
-  //   status: 400,
-  //   description: 'Erro de validação',
-  // })
-  // async update(
-  //   @Param('id') parentExpenseId: string,
-  //   @Req() req: Request,
-  //   @Body() body: UpdateExpenseCardDto,
-  // ) {
-  //   const user = req.user as { sub: string };
-
-  //   const data = await this.expenseCardService.update(
-  //     { ...body, parentExpenseId },
-  //     user.sub,
-  //   );
-
-  //   return {
-  //     statusCode: HttpStatus.OK,
-  //     message: 'Despesa atualizada com sucesso',
-  //     data,
-  //   };
-  // }
-
   @Put(':parentExpenseId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Editar despesa parcelada do cartão' })
@@ -121,11 +83,6 @@ export class ExpenseCardController {
     @Body() body: UpdateExpenseCardDto,
   ) {
     const user = req.user as { sub: string };
-
-    // const data = await this.expenseCardService.update(
-    //   { ...body, parentExpenseId },
-    //   user.sub,
-    // );
 
     const data = await this.expenseCardService.update(
       parentExpenseId,
@@ -165,5 +122,20 @@ export class ExpenseCardController {
     const user = req.user as { sub: string };
 
     return this.expenseCardService.findCurrentMonth(user.sub);
+  }
+
+  @Get(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'ID da despesa',
+    example: '65cfa2d7e7f1b2a9c4e9a123',
+  })
+  async findById(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ): Promise<ExpenseCard> {
+    const user = req.user as { sub: string };
+
+    return this.expenseCardService.findById(id, user.sub);
   }
 }

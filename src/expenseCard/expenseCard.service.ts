@@ -185,4 +185,17 @@ export class ExpenseCardService {
       })
       .sort({ dueDate: 1 });
   }
+
+  async findById(id: string, userId: string): Promise<ExpenseCard> {
+    const expenseCard = await this.expenseCard
+      .findOne({ _id: id, userId, deleted: false })
+      .lean()
+      .exec();
+
+    if (!expenseCard) {
+      throw new NotFoundException('Despesa não encontrada ou acesso negado.');
+    }
+
+    return expenseCard;
+  }
 }
