@@ -5,6 +5,7 @@ import { ExpenseCard } from 'src/schemas/expenseCard.schema';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateExpenseCardDto } from './dtos/create-expense-card.dto';
 import calculateFirstDueDate from 'src/shared/utils/calculateFirstDueDate';
+import { UpdateExpenseCardDto } from './dtos/update-expense-card.dto';
 
 @Injectable()
 export class ExpenseCardService {
@@ -59,6 +60,78 @@ export class ExpenseCardService {
         installmentNumber: i + 1,
         totalInstallments: dto.totalInstallments,
         purchaseDate: purchaseDate,
+        dueDate,
+        parentExpenseId: parentId,
+      });
+    }
+
+    return await this.expenseCard.insertMany(installments);
+  }
+
+  async update(
+    parentExpenseId: string,
+    dto: UpdateExpenseCardDto,
+    userId: string,
+  ) {
+    const card = await this.creditCard.findOne({
+      _id: dto.cardId,
+      userId,
+      deleted: false,
+    });
+
+    if (!card) {
+      throw new NotFoundException('Cartão não encontrado');
+    }
+
+    // Verifica se a despesa existe
+    const existingExpense = await this.expenseCard.findOne({
+      parentExpenseId: parentExpenseId,
+      userId,
+    });
+
+    if (!existingExpense) {
+      throw new NotFoundException('Despesa não encontrada');
+    }
+
+    // 🔥 Remove parcelas antigas
+    await this.expenseCard.deleteMany({
+      parentExpenseId: parentExpenseId,
+      userId,
+    });
+
+    const installmentValue = Number(
+      (dto.amount / dto.totalInstallments).toFixed(2),
+    );
+
+    const purchaseDate = new Date(dto.purchaseDate);
+
+    const firstDueDate = calculateFirstDueDate(
+      purchaseDate,
+      card.closingDay,
+      card.dueDay,
+    );
+
+    const parentId = new mongoose.Types.ObjectId(parentExpenseId);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const installments: any[] = [];
+
+    for (let i = 0; i < dto.totalInstallments; i++) {
+      const dueDate = new Date(firstDueDate);
+      dueDate.setMonth(dueDate.getMonth() + i);
+
+      installments.push({
+        userId,
+        cardId: dto.cardId,
+        cardName: dto.cardName,
+        brand: dto.brand,
+        category: dto.category,
+        description: dto.description,
+        amount: installmentValue,
+        totalAmount: dto.amount,
+        installmentNumber: i + 1,
+        totalInstallments: dto.totalInstallments,
+        purchaseDate,
         dueDate,
         parentExpenseId: parentId,
       });

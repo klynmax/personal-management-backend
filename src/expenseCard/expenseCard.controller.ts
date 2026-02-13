@@ -8,12 +8,16 @@ import {
   UseGuards,
   Controller,
   HttpStatus,
+  Put,
+  Param,
 } from '@nestjs/common';
 
 import {
   ApiTags,
   ApiQuery,
+  ApiParam,
   ApiConsumes,
+  ApiResponse,
   ApiOperation,
   ApiOkResponse,
   ApiCreatedResponse,
@@ -24,6 +28,7 @@ import { Request } from 'express';
 import { ExpenseCardService } from './expenseCard.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateExpenseCardDto } from './dtos/create-expense-card.dto';
+import { UpdateExpenseCardDto } from './dtos/update-expense-card.dto';
 @ApiTags('ExpenseCard')
 @Controller('expenseCard')
 @UseGuards(JwtAuthGuard)
@@ -47,6 +52,90 @@ export class ExpenseCardController {
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Cartão criado com sucesso',
+      data,
+    };
+  }
+
+  // @Put(':id')
+  // @HttpCode(HttpStatus.OK)
+  // @ApiOperation({ summary: 'Editar despesa parcelada do cartão' })
+  // @ApiParam({
+  //   name: 'id',
+  //   description: 'ID agrupador das parcelas',
+  //   example: '65f1c2e8a9f1a23b4c567890',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Despesa atualizada com sucesso',
+  // })
+  // @ApiResponse({
+  //   status: 404,
+  //   description: 'Cartão ou despesa não encontrada',
+  // })
+  // @ApiResponse({
+  //   status: 400,
+  //   description: 'Erro de validação',
+  // })
+  // async update(
+  //   @Param('id') parentExpenseId: string,
+  //   @Req() req: Request,
+  //   @Body() body: UpdateExpenseCardDto,
+  // ) {
+  //   const user = req.user as { sub: string };
+
+  //   const data = await this.expenseCardService.update(
+  //     { ...body, parentExpenseId },
+  //     user.sub,
+  //   );
+
+  //   return {
+  //     statusCode: HttpStatus.OK,
+  //     message: 'Despesa atualizada com sucesso',
+  //     data,
+  //   };
+  // }
+
+  @Put(':parentExpenseId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Editar despesa parcelada do cartão' })
+  @ApiParam({
+    name: 'parentExpenseId',
+    description: 'ID agrupador das parcelas',
+    example: '65f1c2e8a9f1a23b4c567890',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Despesa atualizada com sucesso',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Cartão ou despesa não encontrada',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Erro de validação',
+  })
+  async update(
+    @Param('parentExpenseId') parentExpenseId: string,
+    @Req() req: Request,
+    @Body() body: UpdateExpenseCardDto,
+  ) {
+    const user = req.user as { sub: string };
+
+    // const data = await this.expenseCardService.update(
+    //   { ...body, parentExpenseId },
+    //   user.sub,
+    // );
+
+    const data = await this.expenseCardService.update(
+      parentExpenseId,
+      body,
+      user.sub,
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Despesa atualizada com sucesso',
       data,
     };
   }
