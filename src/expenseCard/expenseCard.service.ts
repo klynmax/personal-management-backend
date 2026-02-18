@@ -7,6 +7,14 @@ import { CreateExpenseCardDto } from './dtos/create-expense-card.dto';
 import calculateFirstDueDate from 'src/shared/utils/calculateFirstDueDate';
 import { UpdateExpenseCardDto } from './dtos/update-expense-card.dto';
 
+type OpenAggregateResult = {
+  total: number;
+  count: number;
+};
+
+type TotalMonthAggregate = {
+  total: number;
+};
 @Injectable()
 export class ExpenseCardService {
   constructor(
@@ -223,6 +231,85 @@ export class ExpenseCardService {
 
     return {
       message: 'Despesa removida com sucesso',
+    };
+  }
+
+  async getExpenseCardSummary(userId: string) {
+    const now = new Date();
+
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const endOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+
+    // Total do mês
+    const totalMonthAgg = await this.expenseCard.aggregate<TotalMonthAggregate>(
+      [
+        {
+          $match: {
+            userId,
+            deleted: false,
+            dueDate: {
+              $gte: startOfMonth,
+              $lte: endOfMonth,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$amount' },
+          },
+        },
+      ],
+    );
+
+    const totalMonth = totalMonthAgg[0]?.total || 0;
+
+    // Total em aberto + Parcelas ativas
+    const openAgg = await this.expenseCard.aggregate<OpenAggregateResult>([
+      {
+        $match: {
+          userId,
+          deleted: false,
+          paid: false,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$amount' },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const totalOpen = openAgg[0]?.total || 0;
+    const activeInstallments = openAgg[0]?.count || 0;
+
+    // Próximo vencimento
+    const nextDue = await this.expenseCard
+      .findOne({
+        userId,
+        deleted: false,
+        paid: false,
+        dueDate: { $gte: now },
+      })
+      .sort({ dueDate: 1 })
+      .select('dueDate');
+
+    return {
+      totalMonth,
+      totalOpen,
+      nextDueDate: nextDue ? nextDue.dueDate.toISOString() : null,
+      activeInstallments,
     };
   }
 }

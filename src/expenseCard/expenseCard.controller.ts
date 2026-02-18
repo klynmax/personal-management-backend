@@ -32,6 +32,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateExpenseCardDto } from './dtos/create-expense-card.dto';
 import { UpdateExpenseCardDto } from './dtos/update-expense-card.dto';
 import { AuthenticatedRequest } from 'src/interfaces/AuthenticatedRequest';
+import { ExpenseCardSummaryDto } from './dtos/summary-expense-card.dto';
 @ApiTags('ExpenseCard')
 @Controller('expenseCard')
 @UseGuards(JwtAuthGuard)
@@ -57,6 +58,27 @@ export class ExpenseCardController {
       message: 'Cartão criado com sucesso',
       data,
     };
+  }
+
+  @Get('summary')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Resumo das despesas do cartão',
+    description:
+      'Retorna total do mês, total em aberto, próximo vencimento e parcelas ativas.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Resumo retornado com sucesso',
+    type: ExpenseCardSummaryDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  async getSummary(@Req() req: AuthenticatedRequest) {
+    const userId = req.user.sub;
+    return this.expenseCardService.getExpenseCardSummary(userId);
   }
 
   @Put(':parentExpenseId')
