@@ -1,15 +1,16 @@
 import {
   Get,
   Req,
+  Put,
   Post,
   Body,
   Query,
+  Param,
+  Delete,
   HttpCode,
   UseGuards,
   Controller,
   HttpStatus,
-  Put,
-  Param,
 } from '@nestjs/common';
 
 import {
@@ -26,10 +27,11 @@ import {
 
 import { Request } from 'express';
 import { ExpenseCardService } from './expenseCard.service';
+import { ExpenseCard } from 'src/schemas/expenseCard.schema';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateExpenseCardDto } from './dtos/create-expense-card.dto';
 import { UpdateExpenseCardDto } from './dtos/update-expense-card.dto';
-import { ExpenseCard } from 'src/schemas/expenseCard.schema';
+import { AuthenticatedRequest } from 'src/interfaces/AuthenticatedRequest';
 @ApiTags('ExpenseCard')
 @Controller('expenseCard')
 @UseGuards(JwtAuthGuard)
@@ -137,5 +139,43 @@ export class ExpenseCardController {
     const user = req.user as { sub: string };
 
     return this.expenseCardService.findById(id, user.sub);
+  }
+
+  @Delete(':parentExpenseId')
+  @ApiOperation({
+    summary: 'Remover despesa do cartão (soft delete)',
+    description:
+      'Realiza a exclusão lógica de todas as parcelas vinculadas ao parentExpenseId.',
+  })
+  @ApiParam({
+    name: 'parentExpenseId',
+    type: String,
+    example: '65f1b7c2e4a123456789abcd',
+    description: 'ID da despesa pai que agrupa as parcelas',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Despesa removida com sucesso',
+    schema: {
+      example: {
+        message: 'Despesa removida com sucesso',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Despesa não encontrada',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  async deleteExpense(
+    @Param('parentExpenseId') parentExpenseId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const user = req.user as { sub: string };
+
+    return this.expenseCardService.delete(parentExpenseId, user.sub);
   }
 }

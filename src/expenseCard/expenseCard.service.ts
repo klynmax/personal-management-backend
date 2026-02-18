@@ -162,7 +162,6 @@ export class ExpenseCardService {
 
   async findCurrentMonth(userId: string) {
     const now = new Date();
-
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const endOfMonth = new Date(
@@ -178,6 +177,7 @@ export class ExpenseCardService {
     return this.expenseCard
       .find({
         userId,
+        deleted: false,
         dueDate: {
           $gte: startOfMonth,
           $lte: endOfMonth,
@@ -197,5 +197,32 @@ export class ExpenseCardService {
     }
 
     return expenseCard;
+  }
+
+  async delete(parentExpenseId: string, userId: string) {
+    const expenses = await this.expenseCard.find({
+      parentExpenseId,
+      userId,
+      deleted: false,
+    });
+
+    if (!expenses.length) {
+      throw new NotFoundException('Despesa não encontrada');
+    }
+
+    await this.expenseCard.updateMany(
+      {
+        parentExpenseId,
+        userId,
+        deleted: false,
+      },
+      {
+        $set: { deleted: true },
+      },
+    );
+
+    return {
+      message: 'Despesa removida com sucesso',
+    };
   }
 }
