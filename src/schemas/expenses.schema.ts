@@ -33,6 +33,12 @@ export class Expenses {
 
   @Prop()
   deletedAt?: Date;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const ExpensesSchema = SchemaFactory.createForClass(Expenses);

@@ -1,158 +1,84 @@
 import {
-  Get,
   Req,
-  Body,
+  Get,
   Post,
-  Param,
+  Body,
   Patch,
+  Param,
   Query,
   Delete,
   UseGuards,
   Controller,
 } from '@nestjs/common';
 
-import {
-  ApiTags,
-  ApiParam,
-  ApiQuery,
-  ApiConsumes,
-  ApiOperation,
-  ApiOkResponse,
-  ApiCreatedResponse,
-  ApiBadRequestResponse,
-} from '@nestjs/swagger';
-
-import type { Request } from 'express';
-import { ExpensesServices } from './expenses.service';
-import { Expenses } from 'src/schemas/expenses.schema';
-import { CreateExpensesDTO } from './dtos/create-expense.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { CreateExpensesDTO } from './dtos/create-expense.dto';
 import { UpdateExpensesDTO } from './dtos/update-expenses.dto';
+import { UpdateExpenseUseCase } from './use-cases/update-expense.usecase';
+import { DeleteExpenseUseCase } from './use-cases/delete-expense.usecase';
+import { CreateExpenseUseCase } from './use-cases/create-expense.usecase';
 import { AuthenticatedRequest } from 'src/interfaces/AuthenticatedRequest';
-@ApiTags('Expenses')
+import { GetMonthlySummaryUseCase } from './use-cases/get-monthly-summary';
+import { FindAllExpensesUseCase } from './use-cases/find-all-expenses.usecase';
+import { FindExpenseByIdUseCase } from './use-cases/find-expense-by-id.usecase';
+
 @Controller('expenses')
-@UseGuards(JwtAuthGuard) // protege todas as rotas
+@UseGuards(JwtAuthGuard)
 export class ExpensesController {
-  constructor(private expensesService: ExpensesServices) {}
+  constructor(
+    private readonly createExpenseUseCase: CreateExpenseUseCase,
+    private readonly updateExpenseUseCase: UpdateExpenseUseCase,
+    private readonly deleteExpenseUseCase: DeleteExpenseUseCase,
+    private readonly findExpenseByIdUseCase: FindExpenseByIdUseCase,
+    private readonly findAllExpensesUseCase: FindAllExpensesUseCase,
+    private readonly getMonthlySummaryUseCase: GetMonthlySummaryUseCase,
+  ) {}
 
   @Post()
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Cria uma nova despesa.' })
-  @ApiCreatedResponse({ description: 'Despesa criada com sucesso' })
-  @ApiBadRequestResponse({
-    description:
-      'Despesa não pode ser criada. Verifique os campos e tente novamente',
-  })
-  create(@Req() req: Request, @Body() body: CreateExpensesDTO) {
-    const user = req.user as { sub: string };
-
-    return this.expensesService.create({
+  async create(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: CreateExpensesDTO,
+  ) {
+    return this.createExpenseUseCase.execute({
       ...body,
-      userId: user.sub,
+      userId: req.user.sub,
     });
   }
 
-  @Patch(':id')
-  @ApiParam({
-    name: 'id',
-    description: 'ID da despesa',
-    example: '65cfa2d7e7f1b2a9c4e9a123',
-  })
-  update(
-    @Req() req: Request,
-    @Param('id') id: string,
-    @Body() body: UpdateExpensesDTO,
-  ) {
-    const user = req.user as { sub: string };
-
-    return this.expensesService.update(id, user.sub, body);
-  }
-
   @Get('/all')
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiOperation({ summary: 'Busca todas as despesas do usuário logado' })
-  findAll(
-    @Req() req: Request,
+  async findAll(
+    @Req() req: AuthenticatedRequest,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
-    const user = req.user as { sub: string };
-
-    return this.expensesService.findAll(
-      user.sub,
+    return this.findAllExpensesUseCase.execute(
+      req.user.sub,
       Number(page) || 1,
       Number(limit) || 10,
     );
   }
 
-  @Get(':id')
-  @ApiParam({
-    name: 'id',
-    description: 'ID da despesa',
-    example: '65cfa2d7e7f1b2a9c4e9a123',
-  })
-  async findById(
-    @Req() req: Request,
+  @Patch(':id')
+  async update(
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-  ): Promise<Expenses> {
-    const user = req.user as { sub: string };
+    @Body() body: UpdateExpensesDTO,
+  ) {
+    return this.updateExpenseUseCase.execute(id, req.user.sub, body);
+  }
 
-    return this.expensesService.findById(id, user.sub);
+  @Get(':id')
+  async findById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.findExpenseByIdUseCase.execute(id, req.user.sub);
   }
 
   @Delete(':id')
-  @ApiParam({
-    name: 'id',
-    description: 'ID da despesa',
-    example: '65cfa2d7e7f1b2a9c4e9a123',
-  })
-  remove(@Req() req: Request, @Param('id') id: string) {
-    const user = req.user as { sub: string };
-
-    return this.expensesService.remove(id, user.sub);
+  async remove(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.deleteExpenseUseCase.execute(id, req.user.sub);
   }
 
   @Get('summary/month')
-  @ApiOperation({
-    summary: 'Resumo das despesas do mês corrente',
-    description:
-      'Retorna a soma total das despesas, a quantidade de despesas, o total gasto por tipo de pagamento (debit e voucher) e a data da última compra realizada no mês corrente.',
-  })
-  @ApiOkResponse({
-    description: 'Resumo mensal das despesas',
-    schema: {
-      type: 'object',
-      properties: {
-        totalAmount: {
-          type: 'number',
-          example: 1250.75,
-        },
-        totalExpenses: {
-          type: 'number',
-          example: 8,
-        },
-        totalDebit: {
-          type: 'number',
-          example: 830.25,
-          description: 'Total gasto com pagamento via débito',
-        },
-        totalVoucher: {
-          type: 'number',
-          example: 420.5,
-          description: 'Total gasto com pagamento via voucher',
-        },
-        lastPurchaseDate: {
-          type: 'string',
-          format: 'date-time',
-          example: '2026-02-18T20:11:00.000Z',
-          nullable: true,
-        },
-      },
-    },
-  })
   async getMonthlySummary(@Req() req: AuthenticatedRequest) {
-    const userId = req.user.sub;
-    return this.expensesService.getMonthlySummary(userId);
+    return this.getMonthlySummaryUseCase.execute(req.user.sub);
   }
 }

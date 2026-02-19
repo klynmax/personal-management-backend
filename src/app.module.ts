@@ -4,9 +4,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 import { EntryModule } from './entry/entry.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ExpensesModules } from './expenses/expenses.module';
+// import { ExpensesModules } from './expenses/expenses.module';
 import { CreditCardModule } from './creditCard/creditCard.module';
 import { ExpenseCardModule } from './expenseCard/expenseCard.module';
+import { ExpensesModule } from './expenses/expenses.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { ExpenseCardModule } from './expenseCard/expenseCard.module';
     AuthModule,
     EntryModule,
     UsersModule,
-    ExpensesModules,
+    // ExpensesModules,
+    ExpensesModule,
     CreditCardModule,
     ExpenseCardModule,
   ],
