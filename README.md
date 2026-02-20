@@ -72,60 +72,299 @@ npm run start:dev
 
 Acessar no navegador http://localhost:3000/api
 
-## Deployment
+## 🏗 Arquitetura do Projeto
 
-When you're ready to deploy your NestJS application to production, there are
-some key steps you can take to ensure it runs as efficiently as possible. Check
-out the [deployment documentation](https://docs.nestjs.com/deployment) for more
-information.
+Este projeto é uma API desenvolvida com **NestJS**, estruturada com foco em:
 
-If you are looking for a cloud-based platform to deploy your NestJS application,
-check out [Mau](https://mau.nestjs.com), our official platform for deploying
-NestJS applications on AWS. Mau makes deployment straightforward and fast,
-requiring just a few simple steps:
+- Separação clara de responsabilidades
+- Baixo acoplamento entre camadas
+- Alta testabilidade
+- Escalabilidade modular
+- Indepedência de infraestrutura
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+A arquitetura aplicada é inspirada em **Clean Architecture + DDD tático simplificado**, onde:
+
+- A regra de negócio é isolada
+- Infraestrutura é substituível
+- Controllers são apenas adaptadores
+- Casos de uso concentram a lógica da aplicação
+
+## 📂 Estrutura geral
+
+```
+src
+├── auth
+├── config
+├── creditCard
+├── entry
+├── enum
+├── expenseCard
+├── expenses
+├── interfaces
+├── shared
+├── user
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to
-focus on building features rather than managing infrastructure.
+Todos os módulos de domínio (`creditCard`, `entry`, `expenseCard`, `user`) seguem o mesmo padrão estrutural.
 
-## Resources
+## 🔐 Módulo Auth
 
-Check out a few resources that may come in handy when working with NestJS:
+Responsável por autenticação e autorização.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about
-  the framework.
-- For questions and support, please visit our
-  [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video
-  [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of
-  [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in
-  real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official
-  [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on
-  [X](https://x.com/nestframework) and
-  [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official
-  [Jobs board](https://jobs.nestjs.com).
+```
+auth
+├── dto
+├── guards
+├── strategies
+├── auth.controller.ts
+├── auth.module.ts
+└── auth.service.ts
+```
 
-## Support
+#### 📁 dto/
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors
-and support by the amazing backers. If you'd like to join them, please
-[read more here](https://docs.nestjs.com/support).
+Define contratos de entrada e saída:
 
-## Stay in touch
+- `login.dto.ts`
+- `auth-response.dto.ts`
+- `me-response.ts`
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+#### 📁 guards/
 
-## License
+Proteção de rotas:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- `jwt-auth.guard.ts`
+- `refresh-auth.guard.ts`
+
+#### 📁 strategies/
+
+Estratégias do Passport:
+
+- `jwt.strategy.ts`
+- `refresh.strategy.ts`
+
+Responsável por validar tokens e popular o `Request.user`.
+
+#### 📄 auth.service.ts
+
+Contém regras relacionadas a:
+
+- Login
+- Geração de tokens
+- Refresh token
+- Validação de credencias
+
+📄 auth.controller.ts
+
+Camada HTTP para:
+
+- Login
+- Refresh
+- Me
+
+## ⚙️ config/
+
+Centraliza configurações globais da aplicação.
+
+Exemplo:
+
+- `Swagger.config.ts`
+
+Responsável por configurar documentação e evitar configuração espalhada pela aplicação.
+
+## 🧾 Módulos de Domínio
+
+Os módulos abaixo seguem a mesma arquitetura interna:
+
+- `creditCard`
+- `entry`
+- `expenseCard`
+- `expenses`
+- `user`
+
+Cada um contém:
+
+```
+├── constants
+├── dtos
+├── entities
+├── infrastructure
+├── repositories
+├── use-cases
+├── *.controller.ts
+└── *.module.ts
+```
+
+#### 📁 constants/
+
+- Mensagens de erro
+- Códigos internos
+- Strings reutilizáveis
+- Enums específicos do módulo
+
+Evita repetição e inconsistência.
+
+#### 📁 dtos/
+
+Contratos de entrada/saída da API.
+
+Responsável por:
+
+- Validação
+- Tipagem
+- Definir formato externo
+
+DTO não tem regra de negócio.
+
+#### 📁 entities/
+
+Definem contratos abstratos de persistência.
+
+Exemplo conceitual:
+
+```
+export abstract class ExpenseRepository {
+  abstract create(data: Expense): Promise<Expense>;
+}
+```
+
+UseCases dependem dessa abstração.
+
+#### 📁 infrastructure/
+
+Implementações concretas dos repositórios.
+
+Exemplo:
+
+- `mongoose-*.repository.ts`
+- `*.mapper.ts`
+
+Responsável por:
+
+- Comunicação com banco
+- Mapeamento entidade ↔ documento
+- Isolar Mongoose da regra de negócio
+
+#### 📁 use-cases/
+
+Camada central da aplicação.
+
+Responsável por:
+
+- Orquestrar regras de negócio
+- Validar cenários
+- Chamar repositórios
+- Retornar resultados para controller
+
+UseCases não conhecem:
+
+- HTTP
+- Banco
+- NestJS
+- Mongoose
+
+Apenas regra de negócio.
+
+## 📄 controller.ts
+
+Adaptador HTTP.
+
+Responsável por:
+
+- Receber requisição
+- Validar o DTO
+- Chamar UseCase
+- Retornar resposta
+
+Não contém regra de negócio.
+
+## 📄 module.ts
+
+Arquivo de composição do NestJS.
+
+Responsável por:
+
+- Registrar providers
+- Fazer bindings entre abstração e implementação
+- Declarar controllers
+
+Aqui ocorre a inversçao de dependência:
+
+```
+{
+  provide: ExpenseRepository,
+  useClass: MongooseExpenseRepository,
+}
+```
+
+## 📁 enum/
+
+Enums globais reutilizaveis.
+
+Exemplo:
+
+- Tipo de requisição autenticada
+- Contratos comuns
+- Estrutura reutilizáveis
+
+Serve como ponto de tipagem comum sem acoplar domínios.
+
+## 📁 shared/
+
+Componentes reutilizáveis e transversais.
+
+Pode conter:
+
+- Pipes
+- Decorators
+- Filtros de exceção
+- Utilitários
+- Helpers
+- Middlewares
+
+Essa pasta evita duplicação e mantém os rótulos limpos.
+
+## 🔄 Fluxo de Execução da Aplicação
+
+**1.** Request chega ao Controller
+**2.** DTO valida entrada
+**3.** Controller chama UseCase
+**4.** UseCase aplica regra de negócio
+**5.** UseCase chama Repository (abstração)
+**6.** Implementação concreta acessa banco
+**7.** Mapper converte dados
+**8.** Resultado retorna ao Controller
+
+## 🧠 Princípios Arquiteturais
+
+**Inversão de Dependência**
+Camada de negócio depende de abstrações.
+
+**Separação de Responsabilidades**
+Cada camada tem função única.
+
+**Baixo Acoplamento**
+Infraestrutura pode ser substituída.
+
+**Alta Coesão**
+Cada módulo é responsável por seu próprio domínio.
+
+**Testabilidade**
+UseCases podem ser testados isoladamente com mocks.
+
+## 📈 Benefícios da Arquitetura
+
+- Crescimento previsível
+- Facilidade de manutenção
+- Redução de dívida técnica
+- Facilidade para novos desenvolvedores
+- Troca de banco sem impacto no domínio
+
+## ⚠️ Boas Práticas Importantes
+
+Evitar:
+
+- Regras de negócio no controller
+- Acesso direto ao banco de dados dentro de UseCases
+- DTO sendo usado como entidade
+- Vazamento de detalhes do Mongoose
