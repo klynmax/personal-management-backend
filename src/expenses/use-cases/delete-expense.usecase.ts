@@ -1,7 +1,7 @@
 import { EXPENSE_ERRORS } from '../constants/expense.errors';
+import { EXPENSE_SUCCESSFULLY_CANCELED } from 'src/shared/constants';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ExpenseRepository } from '../repositories/expense.repository';
-import { EXPENSE_SUCCESSFULLY_CANCELED } from '../constants/expense.message';
 
 @Injectable()
 export class DeleteExpenseUseCase {
