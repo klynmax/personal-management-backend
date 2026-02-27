@@ -24,7 +24,7 @@ export class CreditCard {
     required: true,
     enum: BrandCard,
   })
-  brand: string;
+  brand: BrandCard;
 
   @Prop({ type: Number, required: true, min: 0 })
   limit: number;
